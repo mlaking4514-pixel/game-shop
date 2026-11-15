@@ -1,196 +1,245 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>  
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Каталог игр и валюты</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root {
-            --bg-color: #121212;
-            --text-color: #ffffff;
-            --card-bg: #1e1e1e;
-            --button-color: #2481cc;
-            --button-text-color: #ffffff;
-            --hint-color: #aaaaaa;
-        }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Пополнение игр</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#14171f;--bg2:#1e222d;--card:#232838;--line:rgba(255,255,255,.1);--text:#eef0f6;--muted:#8d95ab;--blue:#4f6bd8;--ice:#a9c1ff;--ok:#3ddc97;--bad:#ff6b81}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+body{min-height:100vh;padding:12px 12px calc(96px + env(safe-area-inset-bottom))}
+button,input{font:inherit;color:inherit}
+.hide{display:none!important}
+.top{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 12px}
+.brand{font-size:24px;font-weight:900;letter-spacing:-.8px}
+.brand span{color:var(--ice)}
+.hello{font-size:12px;color:var(--muted);margin-top:2px}
+.cur{display:flex;gap:6px;overflow-x:auto;margin-bottom:10px;scrollbar-width:none}
+.cur::-webkit-scrollbar,.chips::-webkit-scrollbar{display:none}
+.cur button{flex:1 0 auto;border:1px solid var(--line);background:var(--bg2);border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px;color:var(--muted)}
+.cur button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.search input{width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--bg2);padding:0 14px;font-size:15px;outline:none;margin-bottom:10px}
+.search input:focus{border-color:var(--blue)}
+.chips{display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--line);background:none;padding:6px 12px;border-radius:99px;font-size:13px;font-weight:600;color:var(--muted)}
+.chip.on{background:var(--text);color:var(--bg);border-color:var(--text)}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 12px;
-        }
+/* Сетка постеров */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(min-width:520px){.grid{grid-template-columns:repeat(5,1fr)}}
+.poster{position:relative;aspect-ratio:3/4;border-radius:10px;overflow:hidden;border:2px solid rgba(255,255,255,.14);padding:0;cursor:pointer;
+  background:linear-gradient(155deg,var(--a),var(--b));background-size:cover;background-position:center;transition:transform .15s,border-color .15s;text-align:left}
+.poster:active{transform:scale(.95)}
+.poster:hover{border-color:var(--ice)}
+.poster .t{position:absolute;left:8px;right:8px;top:10px;font-weight:900;font-size:clamp(14px,4.6vw,19px);line-height:.95;letter-spacing:-.04em;text-transform:uppercase;text-shadow:0 2px 10px rgba(0,0,0,.4);word-break:break-word}
+.poster .u{position:absolute;left:0;right:0;bottom:0;padding:18px 8px 7px;font-size:11px;font-weight:700;background:linear-gradient(transparent,rgba(5,6,12,.85))}
+.poster.img .t{display:none}
+.empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:40px 0;font-size:14px}
+.pager{display:flex;justify-content:center;gap:8px;margin-top:20px}
+.pager button{min-width:38px;height:38px;border:0;border-radius:8px;background:#2f3652;font-weight:700;font-size:15px}
+.pager button.on{background:var(--blue)}
 
-        h1 {
-            text-align: center;
-            font-size: 20px;
-            margin-bottom: 16px;
-        }
-
-        .game-card {
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            transition: transform 0.2s;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }       
-
-        .game-card:active {
-            transform: scale(0.96);
-        }
-
-        .game-poster {
-            width: 100%;
-            aspect-ratio: 3 / 4;
-            object-fit: cover;
-            background-color: #333;
-        }
-
-        .game-title {
-            padding: 8px;
-            font-size: 12px;
-            text-align: center;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        /* Секция выбора номинала (скрыта по умолчанию, открывается при клике на игру) */
-        #shop-section {
-            display: none;
-        }
-
-        .back-btn {
-            background: none;
-            border: none;
-            color: var(--button-color);
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 12px;
-            padding: 0;
-        }
-        .product-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .product-item {
-            background-color: var(--card-bg);
-            padding: 12px 16px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }   
-
-        .product-info h3 {
-            margin: 0 0 4px 0;
-            font-size: 15px;
-        }
-
-        .product-info p {
-            margin: 0;
-            font-size: 13px;
-            color: var(--hint-color);
-        }
-
-        .buy-btn {
-            background-color: var(--button-color);
-            color: var(--button-text-color);
-            border: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-        }
-    </style>
+/* Игра */
+.back{background:none;border:0;color:var(--ice);font-weight:700;font-size:14px;padding:6px 0;margin-bottom:8px;cursor:pointer}
+.head{display:flex;gap:14px;align-items:flex-end;margin-bottom:6px}
+.head .poster{width:104px;flex:none;cursor:default}
+.head h2{margin:0 0 4px;font-size:22px;letter-spacing:-.5px}
+.head p{margin:0;font-size:13px;color:var(--muted)}
+.step{font-size:15px;font-weight:800;margin:22px 2px 10px}
+.fields{display:grid;gap:10px}.fields.two{grid-template-columns:2fr 1fr}
+.field input{width:100%;height:48px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg2);padding:0 14px;font-size:16px;outline:none}
+.field input:focus{border-color:var(--blue)}
+.field.bad input{border-color:var(--bad)}
+.hint{font-size:12px;color:var(--muted);margin:8px 2px 0}
+.packs{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.pack{position:relative;text-align:left;border-radius:14px;padding:14px 12px;background:var(--card);border:1.5px solid var(--line);cursor:pointer}
+.pack:active{transform:scale(.97)}
+.pack.on{border-color:var(--blue);background:#2b3358;box-shadow:0 0 0 3px rgba(79,107,216,.3)}
+.pack .amt{font-size:17px;font-weight:900;letter-spacing:-.3px}
+.pack .price{font-size:13px;color:var(--ice);margin-top:8px;font-weight:700}
+.pack .hot{position:absolute;right:8px;top:8px;background:var(--ok);color:#06241a;font-size:10px;font-weight:800;padding:3px 7px;border-radius:99px}
+.bar{position:fixed;left:0;right:0;bottom:0;padding:12px 12px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 35%)}
+.pay{width:100%;height:54px;border:0;border-radius:14px;font-weight:800;font-size:16px;color:#fff;background:var(--blue);cursor:pointer;box-shadow:0 10px 24px -10px var(--blue)}
+.pay:disabled{opacity:.35;box-shadow:none}
+.toast{position:fixed;left:50%;top:12px;transform:translate(-50%,-80px);background:var(--bad);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;font-weight:700;transition:transform .25s;z-index:9}
+.toast.show{transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
 </head>
 <body>
-    <!-- Главная страница: Сетка игр -->
-    <div id="catalog-section">
-        <h1>🎮 Выберите игру</h1>
-        <div class="grid-container" id="games-grid">
-            <!-- Карточки генерируются динамически или прописаны вручную -->
-            <div class="game-card" onclick="selectGame('Mobile Legends', '💎 Алмазы')">
-                <img class="game-poster" src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300" alt="MLBB">
-                <div class="game-title">Mobile Legends</div>
-            </div>
-            <div class="game-card" onclick="selectGame('PUBG Mobile', '🛒 UC')">
-                <img class="game-poster" src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=300" alt="PUBG">
-                <div class="game-title">PUBG Mobile</div>
-            </div>
-            <div class="game-card" onclick="selectGame('Cyberpunk 2077', '🎁 DLC / Валюта')">
-                <img class="game-poster" src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=300" alt="Cyberpunk">
-                <div class="game-title">Cyberpunk</div>
-            </div>
-        </div>
-    </div>
-    <!-- Страница магазина: Список товаров -->
-    <div id="shop-section">
-        <button class="back-btn" onclick="goBack()">← Назад</button>
-        <h1>🛒 Магазин</h1>
-        <div class="product-list" id="product-list">
-            <!-- Товары будут добавлены здесь динамически -->
-        </div>
-    </div>
+<div id="toast" class="toast"></div>
 
-    <script>
-        let tg = window.Telegram.WebApp;
-        tg.expand();
+<main id="home">
+  <div class="top"><div><div class="brand">Top<span>Up</span></div><div class="hello" id="hello">Пополнение игр за минуту</div></div></div>
+  <div class="cur" id="cur"></div>
+  <div class="search"><input id="q" placeholder="Найти игру" autocomplete="off"></div>
+  <div class="chips" id="chips"></div>
+  <div class="grid" id="grid"></div>
+  <div class="pager" id="pager"></div>
+</main>
 
-        function selectGame(gameName, currencyType) {
-            document.getElementById('catalog-section').style.display = 'none';
-            document.getElementById('shop-section').style.display = 'block';
-            document.getElementById('selected-game-title').innerText = gameName;
+<main id="shop" class="hide">
+  <button class="back" id="back">← Все игры</button>
+  <div class="head"><div id="hp"></div><div><h2 id="hn"></h2><p id="hu"></p></div></div>
+  <div class="step">1. Ваш аккаунт</div>
+  <div class="fields" id="fields"></div>
+  <div class="hint" id="idHint"></div>
+  <div class="step">2. Выберите набор</div>
+  <div class="packs" id="packs"></div>
+</main>
+<div class="bar hide" id="bar"><button class="pay" id="pay" disabled>Выберите набор</button></div>
 
+<script>
+const tg = window.Telegram && Telegram.WebApp;
+if (tg) { tg.ready(); tg.expand(); try{ tg.setHeaderColor('#14171f'); tg.setBackgroundColor('#14171f'); }catch(e){} }
+const haptic = t => { try{ tg.HapticFeedback.impactOccurred(t||'light'); }catch(e){} };
 
-        let list = document.getElementById('product-list');
-        list.innerHTML = `
-            <div class="product-item">
-                <div class="product-info">
-                    <h3>Малый набор (${currencyType})</h3>
-                    <p>Быстрое зачисление на аккаунт</p>
-                </div>
-                <button class="buy-btn" onclick="buyItem('${gameName}', 'Малый набор', 150)">150 сум</button>
-            </div>
-            <div class="product-item">
-                <div class="product-info">
-                    <h3>Средний набор (${currencyType})</h3>
-                    <p>Популярный выбор + бонус</p>
-                </div>
-                <button class="buy-btn" onclick="buyItem('${gameName}', 'Средний набор', 650)">650 сум</button>
-            </div>
-            <div class="product-item">
-                <div class="product-info">
-                    <h3>Большой набор (${currencyType})</h3>
-                    <p>Максимальная выгода</p>
-                </div>
-                <button class="buy-btn" onclick="buyItem('${gameName}', 'Большой набор', 1200)">1200 сум</button>
-            </div>
-        `;
-    }
+/* ================= НАСТРОЙКИ ================= */
+// Курсы к доллару — ПОСТАВЬ АКТУАЛЬНЫЕ. round — округлять вверх до этого шага.
+const RATES = {
+  UZS:{r:12800, sym:'сум', round:1000, label:'🇺🇿 Сум'},
+  USD:{r:1,     sym:'$',   label:'🇺🇸 Доллар'},
+  EUR:{r:0.92,  sym:'€',   label:'🇪🇺 Евро'},
+  KZT:{r:500,   sym:'₸',   round:10, label:'🇰🇿 Тенге'},
+  RUB:{r:92,    sym:'₽',   round:1,  label:'🇷🇺 Рубли'},
+};
+const MARKUP = 1.10; // твоя наценка (1.10 = +10%)
+const PAGE = 9;      // игр на страницу
 
-    function goBack() {
-        document.getElementById('shop-section').style.display = 'none';
-        document.getElementById('catalog-section').style.display = 'block';
-    }
+// poster: ссылка на картинку обложки (необязательно). Цены packs — в долларах.
+const GAMES = [
+ {id:'mlbb',name:'Mobile Legends',cat:'Мобильные',a:'#3b6bff',b:'#8b2bff',unit:'💎 Алмазы',idLabel:'User ID',zone:true,hint:'Профиль → ID, число в скобках — Zone ID',poster:'',
+  packs:[[56,0.9],[112,1.8],[278,4.4,1],[571,8.9],[1167,17.5],[2976,44]]},
+ {id:'pubg',name:'PUBG Mobile',cat:'Мобильные',a:'#ff9a3c',b:'#b8321f',unit:'🪙 UC',idLabel:'Player ID',hint:'Профиль → нажмите на ID',poster:'',
+  packs:[[60,0.99],[325,4.99,1],[660,9.99],[1800,24.99],[3850,49.99]]},
+ {id:'ff',name:'Free Fire',cat:'Мобильные',a:'#ffb11f',b:'#ff3d3d',unit:'💎 Алмазы',idLabel:'Player ID',hint:'Профиль → ID игрока',poster:'',
+  packs:[[100,0.99],[310,2.99,1],[520,4.99],[1060,9.99],[2180,19.99]]},
+ {id:'codm',name:'Call of Duty Mobile',cat:'Мобильные',a:'#2f8f5b',b:'#10261c',unit:'🎖 CP',idLabel:'UID',hint:'Настройки → Основное → UID',poster:'',
+  packs:[[80,0.99],[420,4.99,1],[880,9.99],[2400,24.99]]},
+ {id:'coc',name:'Clash of Clans',cat:'Мобильные',a:'#f0b429',b:'#2b6fd6',unit:'💎 Гемы',idLabel:'Тег игрока',text:1,hint:'Профиль → тег вида #ABC123',poster:'',
+  packs:[[80,0.99],[500,4.99,1],[1200,9.99],[2500,19.99]]},
+ {id:'cr',name:'Clash Royale',cat:'Мобильные',a:'#3aa0ff',b:'#7a2bd6',unit:'💎 Гемы',idLabel:'Тег игрока',text:1,hint:'Профиль → тег вида #ABC123',poster:'',
+  packs:[[80,0.99],[500,4.99,1],[1200,9.99],[2500,19.99]]},
+ {id:'brawl',name:'Brawl Stars',cat:'Мобильные',a:'#ffd23f',b:'#e8451e',unit:'💎 Гемы',idLabel:'Тег игрока',text:1,hint:'Профиль → тег вида #ABC123',poster:'',
+  packs:[[30,1.99],[80,4.99,1],[170,9.99],[360,19.99]]},
+ {id:'so2',name:'Standoff 2',cat:'Мобильные',a:'#5a6478',b:'#1a1e2a',unit:'🪙 Голда',idLabel:'ID игрока',hint:'Профиль → ID',poster:'',
+  packs:[[100,1.2],[500,5.5,1],[1000,10.5],[3000,29]]},
+ {id:'genshin',name:'Genshin Impact',cat:'ПК',a:'#23c9c3',b:'#5b3fd6',unit:'✨ Кристаллы',idLabel:'UID',hint:'Паймон → UID внизу справа',poster:'',
+  packs:[[60,0.99],[330,4.99,1],[1090,14.99],[2240,29.99],[3880,49.99]]},
+ {id:'hsr',name:'Honkai: Star Rail',cat:'ПК',a:'#6a5cff',b:'#1b1250',unit:'✨ Осколки',idLabel:'UID',hint:'Меню → UID в углу экрана',poster:'',
+  packs:[[60,0.99],[330,4.99,1],[1090,14.99],[2240,29.99]]},
+ {id:'val',name:'Valorant',cat:'ПК',a:'#ff4655',b:'#2a0d12',unit:'⚡ VP',idLabel:'Riot ID',text:1,hint:'Ник#TAG',poster:'',
+  packs:[[475,4.99],[1000,9.99,1],[2050,19.99],[3650,34.99]]},
+ {id:'roblox',name:'Roblox',cat:'ПК',a:'#ff4f7b',b:'#8f1fd1',unit:'🧱 Robux',idLabel:'Ник в Roblox',text:1,hint:'Точное имя без @',poster:'',
+  packs:[[400,4.99],[800,9.99,1],[1700,19.99],[4500,49.99]]},
+ {id:'fn',name:'Fortnite',cat:'ПК',a:'#7c5cff',b:'#21c6ff',unit:'🪙 V-Bucks',idLabel:'Epic ID / ник',text:1,hint:'Ник в Epic Games',poster:'',
+  packs:[[1000,8.99],[2800,22.99,1],[5000,36.99],[13500,89.99]]},
+ {id:'steam',name:'Steam',cat:'Карты',a:'#1b6fa8',b:'#0b1a2a',unit:'💳 Пополнение $',idLabel:'Логин Steam',text:1,hint:'Логин (не ник). Сумма указана в долларах',poster:'',
+  packs:[[5,5.5],[10,10.8,1],[20,21.5],[50,53]]},
+ {id:'psn',name:'PlayStation',cat:'Карты',a:'#2a63e0',b:'#0a1030',unit:'💳 Пополнение $',idLabel:'PSN ID',text:1,hint:'Ник PSN аккаунта',poster:'',
+  packs:[[10,11],[25,27,1],[50,53]]},
+ {id:'tg',name:'Telegram Stars',cat:'Карты',a:'#35b6ff',b:'#1a5fd0',unit:'⭐ Звёзды',idLabel:'@username',text:1,hint:'Кому зачислить, например @durov',poster:'',
+  packs:[[50,1.2],[100,2.4,1],[500,11.5],[1000,23]]},
+];
+const CATS = ['Все', ...new Set(GAMES.map(g => g.cat))];
+/* ============================================== */
 
-    function buyItem(game, item, price) {
-        let data = {
-            game: game,
-            item: item,
-            price: price
-        };
-        tg.sendData(JSON.stringify(data));
-    }
- </script>
+let cat='Все', page=1, game=null, pack=null, cc='UZS';
+try{ cc = localStorage.getItem('cc') || 'UZS'; if(!RATES[cc]) cc='UZS'; }catch(e){}
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+function conv(usd, code){
+  const c = RATES[code||cc], v = usd * MARKUP * c.r;
+  return c.round ? Math.ceil(v / c.round) * c.round : Math.ceil(v * 100) / 100;
+}
+function money(usd){
+  const c = RATES[cc], v = conv(usd);
+  if (cc==='USD') return '$' + v.toFixed(2);
+  if (cc==='EUR') return v.toFixed(2) + ' €';
+  return v.toLocaleString('ru-RU').replace(/\u00a0/g,' ') + ' ' + c.sym;
+}
+
+const u = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+if (u) $('hello').textContent = 'Привет, ' + u.first_name + '!';
+
+function posterHTML(g, withUnit){
+  const st = g.poster ? `--a:${g.a};--b:${g.b};background-image:url('${esc(g.poster)}')` : `--a:${g.a};--b:${g.b}`;
+  return `<div class="poster ${g.poster?'img':''}" style="${st}"><span class="t">${esc(g.name)}</span>${withUnit?`<span class="u">${esc(g.unit)}</span>`:''}</div>`;
+}
+
+function renderCur(){
+  $('cur').innerHTML = Object.keys(RATES).map(k => `<button class="${k===cc?'on':''}" data-c="${k}">${RATES[k].label}</button>`).join('');
+}
+function renderChips(){
+  $('chips').innerHTML = CATS.map(c => `<button class="chip ${c===cat?'on':''}" data-c="${esc(c)}">${esc(c)}</button>`).join('');
+}
+function renderGrid(){
+  const q = $('q').value.trim().toLowerCase();
+  const list = GAMES.filter(g => (cat==='Все'||g.cat===cat) && g.name.toLowerCase().includes(q));
+  const pages = Math.max(1, Math.ceil(list.length / PAGE));
+  if (page > pages) page = 1;
+  const part = list.slice((page-1)*PAGE, page*PAGE);
+  $('grid').innerHTML = part.length ? part.map(g => `<button class="poster-wrap" data-id="${g.id}" style="all:unset;display:block;cursor:pointer">${posterHTML(g,true)}</button>`).join('')
+    : '<div class="empty">Такой игры пока нет. Напишите нам — добавим.</div>';
+  $('pager').innerHTML = pages > 1 ? Array.from({length:pages},(_,i)=>`<button class="${i+1===page?'on':''}" data-p="${i+1}">${i+1}</button>`).join('') : '';
+}
+$('cur').onclick = e => { const b=e.target.closest('button'); if(!b) return; cc=b.dataset.c; try{localStorage.setItem('cc',cc)}catch(x){} haptic(); renderCur(); if(game){renderPacks(); updatePay();} };
+$('chips').onclick = e => { const c=e.target.closest('.chip'); if(!c) return; cat=c.dataset.c; page=1; haptic(); renderChips(); renderGrid(); };
+$('q').oninput = () => { page=1; renderGrid(); };
+$('pager').onclick = e => { const b=e.target.closest('button'); if(!b) return; page=+b.dataset.p; haptic(); renderGrid(); window.scrollTo(0,0); };
+$('grid').onclick = e => { const el=e.target.closest('[data-id]'); if(el) openGame(el.dataset.id); };
+
+function renderPacks(){
+  $('packs').innerHTML = game.packs.map((p,i) => `
+    <button class="pack ${pack===p?'on':''}" data-i="${i}">
+      ${p[2]?'<span class="hot">ХИТ</span>':''}
+      <div class="amt">${p[0].toLocaleString('ru-RU')} ${esc(game.unit.split(' ').slice(1).join(' '))}</div>
+      <div class="price">${money(p[1])}</div>
+    </button>`).join('');
+}
+function openGame(id){
+  game = GAMES.find(g => g.id===id); pack = null; haptic('medium');
+  $('home').classList.add('hide'); $('shop').classList.remove('hide'); $('bar').classList.remove('hide');
+  window.scrollTo(0,0);
+  $('hp').innerHTML = posterHTML(game,false);
+  $('hn').textContent = game.name; $('hu').textContent = game.unit;
+  $('fields').className = 'fields' + (game.zone?' two':'');
+  $('fields').innerHTML = `<div class="field" id="f1"><input id="uid" ${game.text?'':'inputmode="numeric"'} placeholder="${esc(game.idLabel)}" autocomplete="off"></div>` +
+    (game.zone ? `<div class="field" id="f2"><input id="zone" inputmode="numeric" placeholder="Zone" autocomplete="off"></div>` : '');
+  $('idHint').textContent = game.hint;
+  renderPacks(); updatePay();
+}
+$('packs').onclick = e => { const el=e.target.closest('.pack'); if(!el) return; pack = game.packs[+el.dataset.i]; haptic(); renderPacks(); updatePay(); };
+$('back').onclick = () => { haptic(); game=null; $('shop').classList.add('hide'); $('bar').classList.add('hide'); $('home').classList.remove('hide'); };
+
+function updatePay(){
+  $('pay').disabled = !pack;
+  $('pay').textContent = pack ? 'Оплатить ' + money(pack[1]) : 'Выберите набор';
+}
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2200); try{tg.HapticFeedback.notificationOccurred('error')}catch(e){} }
+
+$('pay').onclick = () => {
+  const uid = $('uid').value.trim(), zone = game.zone ? $('zone').value.trim() : '';
+  let bad = false;
+  $('f1').classList.remove('bad'); if($('f2')) $('f2').classList.remove('bad');
+  if (!uid || (!game.text && !/^\d{5,15}$/.test(uid))) { $('f1').classList.add('bad'); bad = true; }
+  if (game.zone && !/^\d{3,6}$/.test(zone)) { $('f2').classList.add('bad'); bad = true; }
+  if (bad) { toast('Проверьте ID аккаунта'); return; }
+  const order = {
+    game: game.name, game_id: game.id,
+    item: pack[0] + ' ' + game.unit.split(' ').slice(1).join(' '),
+    price: conv(pack[1]), currency: cc, price_usd: pack[1],
+    player_id: uid, zone: zone || null
+  };
+  haptic('heavy');
+  if (tg) tg.sendData(JSON.stringify(order));
+  else alert('Заказ (тест вне Telegram):\n' + JSON.stringify(order, null, 2));
+};
+
+renderCur(); renderChips(); renderGrid();
+</script>
 </body>
 </html>
