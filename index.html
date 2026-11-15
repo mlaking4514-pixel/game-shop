@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Магазин игровой валюты</title>
+    <!-- Подключаем официальный скрипт Telegram Web App SDK-->
+     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+     <style>
+        :root {
+            --bg-color: #f9f9f9;
+            --text-color: #333;
+            --card-bg: #fff;
+            --hint-color: #666;
+            --button-color: #007bff;
+            --button-text-color: #fff;
+        }
+
+body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        margin: 0;
+        padding: 16px;
+    }
+
+    h1 {
+        text-align: center;
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .catalog {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .product-card {
+        background-color: var(--card-bg);
+        padding: 16px;
+        border-radius: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .product-info h3 {
+        margin: 0 0 6px 0;
+        font-size: 16px;
+    }
+
+    .product-info p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--hint-color);
+    }
+
+    .buy-btn {
+        background-color: var(--button-color);
+        color: var(--button-text-color);
+        border: none;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+    .buy-btn:active {
+        opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+
+    <h1>🛒 Каталог товаров</h1>
+
+    <div class="catalog">
+    <div class="product-card">
+        <div class="product-info">
+            <h3>Пакет 100 алмазов</h3>
+            <p>100 💎 — Быстрое зачисление</p>
+        </div>
+        <button class="buy-btn" onclick="buyItem('100 алмазов', 150)">150 сум</button>
+    </div>
+
+    <div class="product-card">
+        <div class="product-info">
+            <h3>Пакет 500 алмазов</h3>
+            <p>500 💎 + Бонус 50</p>
+        </div>
+        <button class="buy-btn" onclick="buyItem('500 алмазов', 700)">700 сум</button>
+    </div>
+
+    <div class="product-card">
+        <div class="product-info">
+            <h3>Элитный пропуск (Elite Pass)</h3>
+            <p>Полный доступ к сезону</p>
+        </div>
+        <button class="buy-btn" onclick="buyItem('Элитный пропуск', 1200)">1200 сум</button>
+    </div>
+</div>
+
+<script>
+    // Инициализируем Telegram Web App
+    let tg = window.Telegram.WebApp;
+    tg.expand(); // Разворачиваем на весь экран
+
+    function buyItem(itemName, price) {
+        // Формируем данные, которые отправим обратно в бота
+        let data = {
+            item: itemName,
+            price: price
+        };
+
+        // Отправляем данные боту и закрываем мини-приложение
+        tg.sendData(JSON.stringify(data));
+    }
+</script>
+
+</body>
+</html>
