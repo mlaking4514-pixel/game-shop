@@ -1,123 +1,196 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
+<head>  
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Магазин игровой валюты</title>
-    <!-- Подключаем официальный скрипт Telegram Web App SDK-->
-     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-     <style>
+    <title>Каталог игр и валюты</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
         :root {
-            --bg-color: #f9f9f9;
-            --text-color: #333;
-            --card-bg: #fff;
-            --hint-color: #666;
-            --button-color: #007bff;
-            --button-text-color: #fff;
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --card-bg: #1e1e1e;
+            --button-color: #2481cc;
+            --button-text-color: #ffffff;
+            --hint-color: #aaaaaa;
         }
 
-body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text-color);
-        margin: 0;
-        padding: 16px;
-    }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+        }
 
-    h1 {
-        text-align: center;
-        font-size: 22px;
-        margin-bottom: 20px;
-    }
+        h1 {
+            text-align: center;
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
 
-    .catalog {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
+        .game-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }       
 
-    .product-card {
-        background-color: var(--card-bg);
-        padding: 16px;
-        border-radius: 12px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+        .game-card:active {
+            transform: scale(0.96);
+        }
 
-    .product-info h3 {
-        margin: 0 0 6px 0;
-        font-size: 16px;
-    }
+        .game-poster {
+            width: 100%;
+            aspect-ratio: 3 / 4;
+            object-fit: cover;
+            background-color: #333;
+        }
 
-    .product-info p {
-        margin: 0;
-        font-size: 14px;
-        color: var(--hint-color);
-    }
+        .game-title {
+            padding: 8px;
+            font-size: 12px;
+            text-align: center;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        /* Секция выбора номинала (скрыта по умолчанию, открывается при клике на игру) */
+        #shop-section {
+            display: none;
+        }
 
-    .buy-btn {
-        background-color: var(--button-color);
-        color: var(--button-text-color);
-        border: none;
-        padding: 10px 16px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-    }
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--button-color);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+            padding: 0;
+        }
+        .product-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .product-item {
+            background-color: var(--card-bg);
+            padding: 12px 16px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }   
 
-    .buy-btn:active {
-        opacity: 0.8;
-    }
-  </style>
+        .product-info h3 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+        }
+
+        .product-info p {
+            margin: 0;
+            font-size: 13px;
+            color: var(--hint-color);
+        }
+
+        .buy-btn {
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-
-    <h1>🛒 Каталог товаров</h1>
-
-    <div class="catalog">
-    <div class="product-card">
-        <div class="product-info">
-            <h3>Пакет 100 алмазов</h3>
-            <p>100 💎 — Быстрое зачисление</p>
+    <!-- Главная страница: Сетка игр -->
+    <div id="catalog-section">
+        <h1>🎮 Выберите игру</h1>
+        <div class="grid-container" id="games-grid">
+            <!-- Карточки генерируются динамически или прописаны вручную -->
+            <div class="game-card" onclick="selectGame('Mobile Legends', '💎 Алмазы')">
+                <img class="game-poster" src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300" alt="MLBB">
+                <div class="game-title">Mobile Legends</div>
+            </div>
+            <div class="game-card" onclick="selectGame('PUBG Mobile', '🛒 UC')">
+                <img class="game-poster" src="https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=300" alt="PUBG">
+                <div class="game-title">PUBG Mobile</div>
+            </div>
+            <div class="game-card" onclick="selectGame('Cyberpunk 2077', '🎁 DLC / Валюта')">
+                <img class="game-poster" src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=300" alt="Cyberpunk">
+                <div class="game-title">Cyberpunk</div>
+            </div>
         </div>
-        <button class="buy-btn" onclick="buyItem('100 алмазов', 150)">150 сум</button>
+    </div>
+    <!-- Страница магазина: Список товаров -->
+    <div id="shop-section">
+        <button class="back-btn" onclick="goBack()">← Назад</button>
+        <h1>🛒 Магазин</h1>
+        <div class="product-list" id="product-list">
+            <!-- Товары будут добавлены здесь динамически -->
+        </div>
     </div>
 
-    <div class="product-card">
-        <div class="product-info">
-            <h3>Пакет 500 алмазов</h3>
-            <p>500 💎 + Бонус 50</p>
-        </div>
-        <button class="buy-btn" onclick="buyItem('500 алмазов', 700)">700 сум</button>
-    </div>
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
 
-    <div class="product-card">
-        <div class="product-info">
-            <h3>Элитный пропуск (Elite Pass)</h3>
-            <p>Полный доступ к сезону</p>
-        </div>
-        <button class="buy-btn" onclick="buyItem('Элитный пропуск', 1200)">1200 сум</button>
-    </div>
-</div>
+        function selectGame(gameName, currencyType) {
+            document.getElementById('catalog-section').style.display = 'none';
+            document.getElementById('shop-section').style.display = 'block';
+            document.getElementById('selected-game-title').innerText = gameName;
 
-<script>
-    // Инициализируем Telegram Web App
-    let tg = window.Telegram.WebApp;
-    tg.expand(); // Разворачиваем на весь экран
 
-    function buyItem(itemName, price) {
-        // Формируем данные, которые отправим обратно в бота
+        let list = document.getElementById('product-list');
+        list.innerHTML = `
+            <div class="product-item">
+                <div class="product-info">
+                    <h3>Малый набор (${currencyType})</h3>
+                    <p>Быстрое зачисление на аккаунт</p>
+                </div>
+                <button class="buy-btn" onclick="buyItem('${gameName}', 'Малый набор', 150)">150 сум</button>
+            </div>
+            <div class="product-item">
+                <div class="product-info">
+                    <h3>Средний набор (${currencyType})</h3>
+                    <p>Популярный выбор + бонус</p>
+                </div>
+                <button class="buy-btn" onclick="buyItem('${gameName}', 'Средний набор', 650)">650 сум</button>
+            </div>
+            <div class="product-item">
+                <div class="product-info">
+                    <h3>Большой набор (${currencyType})</h3>
+                    <p>Максимальная выгода</p>
+                </div>
+                <button class="buy-btn" onclick="buyItem('${gameName}', 'Большой набор', 1200)">1200 сум</button>
+            </div>
+        `;
+    }
+
+    function goBack() {
+        document.getElementById('shop-section').style.display = 'none';
+        document.getElementById('catalog-section').style.display = 'block';
+    }
+
+    function buyItem(game, item, price) {
         let data = {
-            item: itemName,
+            game: game,
+            item: item,
             price: price
         };
-
-        // Отправляем данные боту и закрываем мини-приложение
         tg.sendData(JSON.stringify(data));
     }
-</script>
+ </script>
 
 </body>
 </html>
