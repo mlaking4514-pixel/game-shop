@@ -105,7 +105,7 @@ const RATES = {
   KZT:{r:500,   sym:'₸',   round:10, label:'🇰🇿 Тенге'},
   RUB:{r:92,    sym:'₽',   round:1,  label:'🇷🇺 Рубли'},
 };
-const MARKUP = 1.10; // твоя наценка (1.10 = +10%)
+let MARKUP = 1.10; // твоя наценка (1.10 = +10%)
 const PAGE = 9;      // игр на страницу
 
 // poster: ссылка на картинку обложки (необязательно). Цены packs — в долларах.
@@ -146,6 +146,19 @@ const GAMES = [
 const CATS = ['Все', ...new Set(GAMES.map(g => g.cat))];
 /* ============================================== */
 
+/* Цены и курсы приходят от бота в ссылке (?c=...) */
+let HIDDEN = [];
+try{
+  const q = new URLSearchParams(location.search).get('c');
+  if (q){
+    const j = JSON.parse(atob(q.replace(/-/g,'+').replace(/_/g,'/')));
+    if (j.r) for (const k in j.r) if (RATES[k]) RATES[k].r = +j.r[k];
+    if (j.m) MARKUP = +j.m;
+    if (j.p) for (const id in j.p){ const g = GAMES.find(x => x.id===id); if (g) j.p[id].forEach((v,i) => { if (g.packs[i] && v!=null) g.packs[i][1] = +v; }); }
+    if (Array.isArray(j.h)) HIDDEN = j.h;
+  }
+}catch(e){}
+
 let cat='Все', page=1, game=null, pack=null, cc='UZS';
 try{ cc = localStorage.getItem('cc') || 'UZS'; if(!RATES[cc]) cc='UZS'; }catch(e){}
 const $ = id => document.getElementById(id);
@@ -178,7 +191,7 @@ function renderChips(){
 }
 function renderGrid(){
   const q = $('q').value.trim().toLowerCase();
-  const list = GAMES.filter(g => (cat==='Все'||g.cat===cat) && g.name.toLowerCase().includes(q));
+  const list = GAMES.filter(g => !HIDDEN.includes(g.id) && (cat==='Все'||g.cat===cat) && g.name.toLowerCase().includes(q));
   const pages = Math.max(1, Math.ceil(list.length / PAGE));
   if (page > pages) page = 1;
   const part = list.slice((page-1)*PAGE, page*PAGE);
@@ -229,7 +242,7 @@ $('pay').onclick = () => {
   if (game.zone && !/^\d{3,6}$/.test(zone)) { $('f2').classList.add('bad'); bad = true; }
   if (bad) { toast('Проверьте ID аккаунта'); return; }
   const order = {
-    game: game.name, game_id: game.id,
+    game: game.name, game_id: game.id, pack_i: game.packs.indexOf(pack),
     item: pack[0] + ' ' + game.unit.split(' ').slice(1).join(' '),
     price: conv(pack[1]), currency: cc, price_usd: pack[1],
     player_id: uid, zone: zone || null
